@@ -28,7 +28,9 @@ Steps:
 - Build your image with `okteto build hello-world`
 - Change the Kubernetes k8s.yml to use the created image and `okteto deploy`
 
-## Option 1: Secret with User Token
+NOTES: Ideally create a Chart for the app and send the image as part of the helm upgrade
+
+## Option 2: Secret with User Token
 
 In this case we are going to use a token to be able to download the repository. 
 
