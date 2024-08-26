@@ -1,0 +1,37 @@
+
+
+build: 
+  hello-world:
+    context: .
+    dockerfile: Dockerfile
+    secrets:
+      ssh: ssh_key
+  gh-token:
+    context: .
+    dockerfile: Dockerfiletoken
+    secrets:
+      _env: .env
+
+
+deploy:
+  - kubectl apply -f k8s.yml
+
+dev:
+  hello-world:
+    image: okteto/golang:1
+    environment:
+      GIT_SSH_KEY: ${MY_SSH_KEY_ADMIN_VAR}
+    command: |
+      git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+      mkdir -p $HOME/.ssh
+      chmod 0700 $HOME/.ssh
+      ssh-keyscan github.com > $HOME/.ssh/known_hosts
+      echo $GIT_SSH_KEY > $HOME/.ssh/id_rsa
+      go mod download && go mod verify
+      bash
+    sync:
+      - .:/usr/src/app
+    volumes:
+      - /go
+      - /root/.cache
+

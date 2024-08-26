@@ -1,0 +1,23 @@
+FROM golang:1.17-buster as builder
+
+WORKDIR /app
+
+ADD . .
+
+
+RUN go env -w GOPRIVATE=github.com/mnevadom/go-private
+
+
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=secret,id=_env,dst=/.env \
+    set -a && . /.env && set +a && \
+    git config --global url."https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/" && go mod download && go mod verify
+
+RUN go build -o /usr/local/bin/hello-world
+
+FROM golang:1.17-buster
+
+COPY --from=builder /usr/local/bin/hello-world /usr/local/bin/hello-world
+
+EXPOSE 8080
+CMD ["/usr/local/bin/hello-world"]
